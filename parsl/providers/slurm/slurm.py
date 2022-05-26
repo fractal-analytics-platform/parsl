@@ -138,7 +138,13 @@ class SlurmProvider(ClusterProvider, RepresentationMixin):
         Returns:
               [status...] : Status list of all jobs
         '''
-        job_id_list = ','.join(self.resources.keys())
+        job_id_list = ','.join(
+            [jid for jid, job in self.resources.items() if not job['status'].terminal]
+        )
+        if not job_id_list:
+            logger.debug('No active jobs, skipping status update')
+            return
+
         cmd = "squeue --job {0}".format(job_id_list)
         logger.debug("Executing sqeueue")
         retcode, stdout, stderr = self.execute_wait(cmd)
