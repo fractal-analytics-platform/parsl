@@ -592,6 +592,17 @@ def starter(comm_q, *args, **kwargs):
     The executor is expected to call this function. The args, kwargs match that of the Interchange.__init__
     """
     setproctitle("parsl: HTEX interchange")
+    
+    ### START FIX ###
+
+    # NOTICE: THIS IS NECESSARY TO AVOID THE SHUTDOWN OF PARENT PROCESS
+    import signal
+    signal.set_wakeup_fd(-1)
+    signal.signal(signal.SIGTERM, signal.SIG_DFL) 
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    ### END FIX ###
+
     # logger = multiprocessing.get_logger()
     ic = Interchange(*args, **kwargs)
     comm_q.put((ic.worker_task_port,
